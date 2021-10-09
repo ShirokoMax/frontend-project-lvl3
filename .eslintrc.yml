@@ -1,0 +1,19 @@
+plugins:
+  - jest
+
+env:
+  node: true
+  browser: true
+  jest: true
+
+parserOptions:
+  ecmaVersion: 12
+  sourceType: module
+
+extends:
+  - "airbnb-base"
+  - "plugin:jest/recommended"
+
+rules:
+  no-console: 0
+  import/extensions: 0
