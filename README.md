@@ -10,4 +10,4 @@
 
 ## Deployed project
 
-[Vercel Production Deployment](https://frontend-project-lvl3-brown-ten.vercel.app/)
+[Vercel Production Deployment](https://frontend-project-lvl3-shirokomax.vercel.app/)
