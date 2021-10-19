@@ -1,11 +1,29 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
 
-export default () => { // Вынесите слой View (тот, где вотчеры) в отдельный файл.
-  const schema = yup.string().url();
-  
+import i18n from 'i18next';
+import resources from './locales/index.js';
+
+export default async () => { // Вынесите слой View (тот, где вотчеры) в отдельный файл.
+  // ------------ ЛОГИКА ЛОКАЛЕЙ И I18NEXT --------------------
+  const i18nInst = i18n.createInstance();
+  await i18nInst.init({ // переделать на Промисы и then
+    lng: 'ru',
+    debug: true, // потом поменять на false
+    returnObjects: true,
+    resources: {
+      ru: resources.ru,
+    },
+  });
+
+  yup.setLocale(i18nInst.t('errors'));
+  //  yup.setLocale(t('errors'));
+
+  // --------------- ЛОГИКА ВАЛИДАЦИИ, КОНТРОЛЛЕРА И ОБРАБОТЧИКА ---------------------
+  const schema = yup.string().url().required();
+
   const form = document.querySelector('form.rss-form.text-body');
-  const urlInput = form.elements['url'];
+  const urlInput = form.elements.url;
 
   urlInput.focus(); // Может по-другому сделать?
 
@@ -15,28 +33,28 @@ export default () => { // Вынесите слой View (тот, где вот�
       data: {
         url: '',
       },
+      errors: [],
     },
     feeds: [],
-  }, (path, value, previousValue) => {
+  }, (path, value) => {
     if (path === 'form.state') {
       switch (value) {
         case 'valid':
           urlInput.classList.remove('is-invalid');
           break;
-  
+
         case 'invalid':
           urlInput.classList.add('is-invalid');
           break;
-      
-        default:
-          break;
+
+        default: // ???
+          break; // ???
       }
     }
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-
     const url = urlInput.value;
 
     schema.validate(url)
@@ -50,12 +68,11 @@ export default () => { // Вынесите слой View (тот, где вот�
 
         state.form.state = 'valid';
         state.form.data = value;
-        state.feeds.push(value);  
+        state.feeds.push(value);
       })
       .catch((err) => {
         state.form.state = 'invalid';
         console.log(err);
       });
-
   });
 };
