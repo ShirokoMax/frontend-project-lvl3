@@ -1,57 +1,48 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
-
+import axios from 'axios';
 import i18n from 'i18next';
+import view from './view.js';
+import parse from './parser.js';
 import resources from './locales/index.js';
 
-export default async () => { // Вынесите слой View (тот, где вотчеры) в отдельный файл.
-  // ------------ ЛОГИКА ЛОКАЛЕЙ И I18NEXT --------------------
-  const i18nInst = i18n.createInstance();
-  await i18nInst.init({ // переделать на Промисы и then
+export default async () => {
+  // const i18n = i18n.createInstance();
+  await i18n.init({ // переделать на Промисы и then
     lng: 'ru',
-    debug: true, // потом поменять на false
+    debug: false,
     returnObjects: true,
     resources: {
       ru: resources.ru,
     },
   });
 
-  yup.setLocale(i18nInst.t('errors'));
+  const state = view({
+    form: {
+      state: 'initial',
+      valid: true,
+      data: {
+        url: '',
+      },
+      error: '',
+    },
+    feeds: [],
+    posts: [],
+  });
+
+  yup.setLocale(i18n.t('validationErrors'));
   //  yup.setLocale(t('errors'));
 
-  // --------------- ЛОГИКА ВАЛИДАЦИИ, КОНТРОЛЛЕРА И ОБРАБОТЧИКА ---------------------
   const schema = yup.string().url().required();
 
   const form = document.querySelector('form.rss-form.text-body');
   const urlInput = form.elements.url;
 
-  urlInput.focus(); // Может по-другому сделать?
-
-  const state = onChange({
-    form: {
-      state: 'valid',
-      data: {
-        url: '',
-      },
-      errors: [],
-    },
-    feeds: [],
-  }, (path, value) => {
-    if (path === 'form.state') {
-      switch (value) {
-        case 'valid':
-          urlInput.classList.remove('is-invalid');
-          break;
-
-        case 'invalid':
-          urlInput.classList.add('is-invalid');
-          break;
-
-        default: // ???
-          break; // ???
-      }
-    }
-  });
+  const errorHandler = (err) => {
+    state.form.valid = false;
+    state.form.error = err.message;
+    state.form.state = 'initial';
+    state.form.state = 'error';
+  };
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -59,20 +50,45 @@ export default async () => { // Вынесите слой View (тот, где �
 
     schema.validate(url)
       .then((value) => {
-        if (state.feeds.indexOf(value) !== -1) {
-          throw new Error('DUBL!!!!'); // ___!!!___ ДОПИЛИТЬ СООБЩЕНИЕ ОШИБКИ!!!!!
+        if (state.feeds.find((el) => el.url === value) !== undefined) {
+          state.form.valid = false;
+          state.form.error = i18n.t('errors.duplicate');
+          state.form.state = 'error';
+          throw new Error(i18n.t('errors.duplicate'));
         }
 
-        form.reset(); // Это точно должно быть тут, а не в контроллере?
-        urlInput.focus(); // Это точно должно быть тут, а не в контроллере?
-
-        state.form.state = 'valid';
+        state.form.valid = true;
+        state.form.state = 'pending';
         state.form.data = value;
-        state.feeds.push(value);
+      })
+      .then(() => { // argument = undefined
+        axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`)
+          .then((resp) => {
+            if (resp.status === 200) {
+              return resp.data;
+            }
+            throw new Error(i18n.t('errors.networkError', { code: resp.status }));
+          })
+          .then((data) => {
+            const xmlData = parse(data.contents, 'xml');
+            const { id, title, description } = xmlData;
+            state.feeds.push({
+              url,
+              id,
+              title,
+              description,
+            });
+
+            const { posts } = xmlData;
+            state.posts.push(...posts);
+            state.form.state = 'fulfilled';
+          })
+          .catch((err) => {
+            errorHandler(err);
+          });
       })
       .catch((err) => {
-        state.form.state = 'invalid';
-        console.log(err);
+        errorHandler(err);
       });
   });
 };

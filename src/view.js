@@ -1,0 +1,110 @@
+import onChange from 'on-change';
+import i18n from 'i18next';
+
+const generatePostsHtml = (posts) => {
+  const postsHtml = posts.map((post) => `
+  <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
+    <a class="fw-bold" href="${post.link}" data-id="${Math.random()}" target="_blank" rel="noopener noreferrer">
+      ${post.title}
+    </a>
+    <button class="btn btn-outline-primary btn-sm" type="button" data-id="${Math.random()}"
+      data-bs-toggle="modal" data-bs-target="#modal">${i18n.t('posts.view')}</button>
+  </li>
+  `);
+
+  const postsWrapper = `
+  <div class="card border-0">
+    <div class="card-body">
+      <h2 class="card-title h4">${i18n.t('posts.header')}</h2>
+    </div>
+  
+    <ul class="list-group border-0 rounded-0">${postsHtml.join('')}</ul>
+  </div>`;
+
+  return postsWrapper;
+};
+
+const generateFeedsHtml = (feeds) => {
+  const feedsHtml = feeds.map((feed) => `
+  <li class="list-group-item border-0 border-end-0">
+    <h3 class="h6 m-0">${feed.title}</h3>
+    <p class="m-0 small text-black-50">${feed.description}</p>
+  </li>
+  `);
+
+  const feedsWrapper = `
+  <div class="card border-0">
+    <div class="card-body">
+      <h2 class="card-title h4">${i18n.t('feeds.header')}</h2>
+    </div>
+    <ul class="list-group border-0 rounded-0">${feedsHtml.join('')}</ul>
+  </div>`;
+
+  return feedsWrapper;
+};
+
+export default (state) => {
+  const form = document.querySelector('form.rss-form.text-body');
+  const urlInput = form.elements.url;
+  const formSubmit = form.querySelector('button[type="submit"]');
+  const postsContainer = document.querySelector('div.posts');
+  const feedsContainer = document.querySelector('div.feeds');
+  const messageContainer = document.querySelector('p.feedback');
+
+  urlInput.focus();
+
+  return onChange(state, (path, value) => {
+    if (path === 'form.valid') {
+      if (value === true) {
+        urlInput.classList.remove('is-invalid');
+      }
+      if (value === false) {
+        urlInput.classList.add('is-invalid');
+      }
+    }
+
+    if (path === 'form.state') {
+      switch (value) {
+        case 'initial':
+          break;
+
+        case 'pending':
+          messageContainer.textContent = '';
+          urlInput.disabled = true;
+          formSubmit.disabled = true;
+          break;
+
+        case 'fulfilled':
+          form.reset();
+          urlInput.disabled = false;
+          formSubmit.disabled = false;
+          urlInput.focus();
+          messageContainer.classList.remove('text-danger');
+          messageContainer.classList.add('text-success');
+          messageContainer.textContent = i18n.t('notifications.successful');
+          break;
+
+        case 'error':
+          urlInput.disabled = false;
+          formSubmit.disabled = false;
+          messageContainer.classList.remove('text-success');
+          messageContainer.classList.add('text-danger');
+          messageContainer.textContent = state.form.error;
+          break;
+
+        default:
+          throw new Error(i18n.t('errors.unknownProcess', { process: value }));
+      }
+    }
+
+    if (path === 'posts') {
+      const postsHtml = generatePostsHtml(value);
+      postsContainer.innerHTML = postsHtml;
+    }
+
+    if (path === 'feeds') {
+      const feedsHtml = generateFeedsHtml(value);
+      feedsContainer.innerHTML = feedsHtml;
+    }
+  });
+};
