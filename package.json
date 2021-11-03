@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "[![Actions Status](https://github.com/ShirokoMax/frontend-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/ShirokoMax/frontend-project-lvl3/actions)",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ShirokoMax/frontend-project-lvl3.git"
