@@ -1,22 +1,11 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import i18n from 'i18next';
+// import i18n from 'i18next';
 import onChange from 'on-change';
 import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
-import resources from './locales/index.js';
 
-export default async () => {
-  // const i18n = i18n.createInstance();
-  await i18n.init({ // переделать на Промисы и then
-    lng: 'ru',
-    debug: false,
-    returnObjects: true,
-    resources: {
-      ru: resources.ru,
-    },
-  });
-
+export default (i18n) => {
   const state = view({
     form: {
       state: 'initial',
@@ -30,7 +19,7 @@ export default async () => {
     feeds: [],
     posts: [],
     seenPosts: [],
-  });
+  }, i18n);
 
   const errorHandler = (err) => {
     state.form.valid = false;
@@ -55,7 +44,7 @@ export default async () => {
           throw new Error(i18n.t('errors.networkError', { code: resp.status }));
         })
         .then((data) => {
-          const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts);
+          const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts, i18n);
 
           const { posts } = xmlDataOfNewPosts;
           state.posts.push(...posts);
@@ -70,9 +59,6 @@ export default async () => {
       getNewPosts();
     }, postsUpdateFrequency);
   };
-
-  yup.setLocale(i18n.t('validationErrors'));
-  //  yup.setLocale(t('errors'));
 
   const schema = yup.string().url().required();
 
@@ -107,7 +93,7 @@ export default async () => {
             throw new Error(i18n.t('errors.networkError', { code: resp.status }));
           })
           .then((data) => {
-            const xmlData = parse(data.contents, 'xml');
+            const xmlData = parse(data.contents, 'xml', i18n);
             const { id, title, description } = xmlData;
             state.feeds.push({
               url,

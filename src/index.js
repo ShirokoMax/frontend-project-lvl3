@@ -1,4 +1,3 @@
-import 'bootstrap';
-import app from './application.js';
+import init from './init.js';
 
-app();
+init();

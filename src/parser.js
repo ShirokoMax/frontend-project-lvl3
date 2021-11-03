@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+// import i18n from 'i18next';
 import uniqueId from 'lodash/uniqueId.js';
 
 const mapping = {
@@ -8,7 +8,7 @@ const mapping = {
   },
 };
 
-const parse = (data, type) => {
+const parse = (data, type, i18n) => {
   const fn = mapping[type];
   if (typeof fn !== 'function') {
     throw new Error(
@@ -51,7 +51,7 @@ const parse = (data, type) => {
   };
 };
 
-const parseNewPosts = (data, type, feedId, posts) => {
+const parseNewPosts = (data, type, feedId, posts, i18n) => {
   const fn = mapping[type];
   if (typeof fn !== 'function') {
     throw new Error(

@@ -1,7 +1,6 @@
 import onChange from 'on-change';
-import i18n from 'i18next';
 
-const generatePostsHtml = (posts, seenPosts) => {
+const generatePostsHtml = (posts, seenPosts, i18n) => {
   const postsHtml = posts.map((post) => {
     const isSeen = seenPosts.find((item) => item === post.id) !== undefined;
 
@@ -29,7 +28,7 @@ const generatePostsHtml = (posts, seenPosts) => {
   return postsWrapper;
 };
 
-const generateFeedsHtml = (feeds) => {
+const generateFeedsHtml = (feeds, i18n) => {
   const feedsHtml = feeds.map((feed) => `
   <li class="list-group-item border-0 border-end-0">
     <h3 class="h6 m-0">${feed.title}</h3>
@@ -48,7 +47,7 @@ const generateFeedsHtml = (feeds) => {
   return feedsWrapper;
 };
 
-export default (state) => {
+export default (state, i18n) => {
   const form = document.querySelector('form.rss-form.text-body');
   const urlInput = form.elements.url;
   const formSubmit = form.querySelector('button[type="submit"]');
@@ -104,18 +103,18 @@ export default (state) => {
 
     if (path === 'posts') {
       const { seenPosts } = onChange.target(state);
-      const postsHtml = generatePostsHtml(value, seenPosts);
+      const postsHtml = generatePostsHtml(value, seenPosts, i18n);
       postsContainer.innerHTML = postsHtml;
     }
 
     if (path === 'feeds') {
-      const feedsHtml = generateFeedsHtml(value);
+      const feedsHtml = generateFeedsHtml(value, i18n);
       feedsContainer.innerHTML = feedsHtml;
     }
 
     if (path === 'seenPosts') {
       const { posts } = onChange.target(state);
-      const postsHtml = generatePostsHtml(posts, value);
+      const postsHtml = generatePostsHtml(posts, value, i18n);
       postsContainer.innerHTML = postsHtml;
     }
   });
