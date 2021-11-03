@@ -1,16 +1,21 @@
 import onChange from 'on-change';
 import i18n from 'i18next';
 
-const generatePostsHtml = (posts) => {
-  const postsHtml = posts.map((post) => `
-  <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
-    <a class="fw-bold" href="${post.link}" data-id="${Math.random()}" target="_blank" rel="noopener noreferrer">
-      ${post.title}
-    </a>
-    <button class="btn btn-outline-primary btn-sm" type="button" data-id="${Math.random()}"
-      data-bs-toggle="modal" data-bs-target="#modal">${i18n.t('posts.view')}</button>
-  </li>
-  `);
+const generatePostsHtml = (posts, seenPosts) => {
+  const postsHtml = posts.map((post) => {
+    const isSeen = seenPosts.find((item) => item === post.id) !== undefined;
+
+    return `
+    <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
+      <a class="${isSeen === true ? 'fw-normal' : 'fw-bold'}" href="${post.link}"
+      data-id="${post.id}" target="_blank" rel="noopener noreferrer">
+        ${post.title}
+      </a>
+      <button class="btn btn-outline-primary btn-sm" type="button" data-id="${post.id}"
+        data-bs-toggle="modal" data-bs-target="#postModal">${i18n.t('posts.view')}</button>
+    </li>
+    `;
+  });
 
   const postsWrapper = `
   <div class="card border-0">
@@ -98,13 +103,20 @@ export default (state) => {
     }
 
     if (path === 'posts') {
-      const postsHtml = generatePostsHtml(value);
+      const { seenPosts } = onChange.target(state);
+      const postsHtml = generatePostsHtml(value, seenPosts);
       postsContainer.innerHTML = postsHtml;
     }
 
     if (path === 'feeds') {
       const feedsHtml = generateFeedsHtml(value);
       feedsContainer.innerHTML = feedsHtml;
+    }
+
+    if (path === 'seenPosts') {
+      const { posts } = onChange.target(state);
+      const postsHtml = generatePostsHtml(posts, value);
+      postsContainer.innerHTML = postsHtml;
     }
   });
 };

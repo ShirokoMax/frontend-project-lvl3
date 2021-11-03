@@ -1,8 +1,9 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18n from 'i18next';
+import onChange from 'on-change';
 import view from './view.js';
-import parse from './parser.js';
+import { parse, parseNewPosts } from './parser.js';
 import resources from './locales/index.js';
 
 export default async () => {
@@ -25,9 +26,50 @@ export default async () => {
       },
       error: '',
     },
+    refreshing: false,
     feeds: [],
     posts: [],
+    seenPosts: [],
   });
+
+  const errorHandler = (err) => {
+    state.form.valid = false;
+    state.form.error = err.message;
+    state.form.state = 'initial';
+    state.form.state = 'error';
+  };
+
+  const postsUpdateFrequency = 5000;
+
+  const getNewPosts = () => {
+    const existedFeeds = onChange.target(state).feeds;
+    const existedPosts = onChange.target(state).posts;
+
+    existedFeeds.forEach((feed) => {
+      const { url } = feed;
+      axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`)
+        .then((resp) => {
+          if (resp.status === 200) {
+            return resp.data;
+          }
+          throw new Error(i18n.t('errors.networkError', { code: resp.status }));
+        })
+        .then((data) => {
+          const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts);
+
+          const { posts } = xmlDataOfNewPosts;
+          state.posts.push(...posts);
+        })
+        .catch(() => {
+          const requestError = new Error(i18n.t('errors.requestError'));
+          errorHandler(requestError);
+        });
+    });
+
+    setTimeout(() => {
+      getNewPosts();
+    }, postsUpdateFrequency);
+  };
 
   yup.setLocale(i18n.t('validationErrors'));
   //  yup.setLocale(t('errors'));
@@ -36,13 +78,8 @@ export default async () => {
 
   const form = document.querySelector('form.rss-form.text-body');
   const urlInput = form.elements.url;
-
-  const errorHandler = (err) => {
-    state.form.valid = false;
-    state.form.error = err.message;
-    state.form.state = 'initial';
-    state.form.state = 'error';
-  };
+  const postsContainer = document.querySelector('div.posts');
+  const postModal = document.getElementById('postModal');
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -83,12 +120,51 @@ export default async () => {
             state.posts.push(...posts);
             state.form.state = 'fulfilled';
           })
-          .catch((err) => {
-            errorHandler(err);
+          .then(() => {
+            const isRefreshing = onChange.target(state).refreshing;
+            if (isRefreshing === false) {
+              state.refreshing = true;
+              setTimeout(() => {
+                getNewPosts();
+              }, postsUpdateFrequency);
+            }
+          })
+          .catch(() => {
+            const requestError = new Error(i18n.t('errors.requestError'));
+            errorHandler(requestError);
           });
       })
       .catch((err) => {
         errorHandler(err);
       });
+  });
+
+  postsContainer.addEventListener('click', (e) => {
+    const { id } = e.target.dataset;
+    if (id) {
+      state.seenPosts.push(id);
+    }
+  });
+
+  postModal.addEventListener('show.bs.modal', (e) => {
+    const button = e.relatedTarget;
+
+    const postEl = button.closest('li.list-group-item');
+    const anchorEl = postEl.querySelector('a');
+    const postId = anchorEl.dataset.id;
+
+    const { posts } = onChange.target(state);
+    const post = posts.find((item) => item.id === postId);
+    const postTitle = post.title;
+    const postDescription = post.description;
+    const postLink = post.link;
+
+    const modalTitle = postModal.querySelector('#postModalLabel');
+    const modalDesc = postModal.querySelector('div.modal-body');
+    const modalLink = postModal.querySelector('a.full-article');
+
+    modalTitle.textContent = postTitle;
+    modalDesc.textContent = postDescription;
+    modalLink.href = postLink;
   });
 };
