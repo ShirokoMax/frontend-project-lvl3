@@ -13,7 +13,7 @@ const init = () => {
   const i18n = i18next.createInstance();
   i18n.init({
     lng: language,
-    debug: true,
+    debug: false,
     resources: {
       ru: resources.ru,
     },
