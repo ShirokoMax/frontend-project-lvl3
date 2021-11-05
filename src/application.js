@@ -15,7 +15,6 @@ const elements = {
 };
 
 export default (i18n) => {
-
   const state = view({
     form: {
       state: 'initial',
