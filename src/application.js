@@ -1,6 +1,5 @@
 import * as yup from 'yup';
 import axios from 'axios';
-// import i18n from 'i18next';
 import onChange from 'on-change';
 import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
@@ -63,7 +62,7 @@ export default (i18n) => {
   const schema = yup.string().url().required();
 
   const form = document.querySelector('form.rss-form.text-body');
-  const urlInput = form.elements.url;
+  const urlInput = document.getElementById('url-input');
   const postsContainer = document.querySelector('div.posts');
   const postModal = document.getElementById('postModal');
 
