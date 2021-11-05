@@ -50,7 +50,7 @@ const generateFeedsHtml = (feeds, i18n) => {
 export default (state, i18n) => {
   const form = document.querySelector('form.rss-form.text-body');
   const urlInput = document.getElementById('url-input');
-  const formSubmit = form.querySelector('button[type="submit"]');
+  const formSubmit = document.querySelector('button[aria-label="add"]');
   const postsContainer = document.querySelector('div.posts');
   const feedsContainer = document.querySelector('div.feeds');
   const messageContainer = document.querySelector('p.feedback');
