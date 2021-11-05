@@ -47,14 +47,14 @@ const generateFeedsHtml = (feeds, i18n) => {
   return feedsWrapper;
 };
 
-export default (state, i18n) => {
-  const form = document.querySelector('form.rss-form.text-body');
-  const urlInput = document.getElementById('url-input');
-  const formSubmit = document.querySelector('button[aria-label="add"]');
-  const postsContainer = document.querySelector('div.posts');
-  const feedsContainer = document.querySelector('div.feeds');
-  const messageContainer = document.querySelector('p.feedback');
+const form = document.querySelector('form.rss-form.text-body');
+const urlInput = document.getElementById('url-input');
+const formSubmit = document.querySelector('button[aria-label="add"]');
+const postsContainer = document.querySelector('div.posts');
+const feedsContainer = document.querySelector('div.feeds');
+const messageContainer = document.querySelector('p.feedback');
 
+export default (state, i18n) => {
   urlInput.focus();
 
   return onChange(state, (path, value) => {
