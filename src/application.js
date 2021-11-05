@@ -5,6 +5,16 @@ import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
 
 export default (i18n) => {
+  const elements = {
+    form: document.querySelector('form.rss-form.text-body'),
+    urlInput: document.getElementById('url-input'),
+    formSubmit: document.querySelector('button[aria-label="add"]'),
+    postsContainer: document.querySelector('div.posts'),
+    feedsContainer: document.querySelector('div.feeds'),
+    messageContainer: document.querySelector('p.feedback'),
+    postModal: document.getElementById('postModal'),
+  };
+
   const state = view({
     form: {
       state: 'initial',
@@ -18,7 +28,7 @@ export default (i18n) => {
     feeds: [],
     posts: [],
     seenPosts: [],
-  }, i18n);
+  }, i18n, elements);
 
   const errorHandler = (err) => {
     state.form.valid = false;
@@ -61,14 +71,9 @@ export default (i18n) => {
 
   const schema = yup.string().url().required();
 
-  const form = document.querySelector('form.rss-form.text-body');
-  const urlInput = document.getElementById('url-input');
-  const postsContainer = document.querySelector('div.posts');
-  const postModal = document.getElementById('postModal');
-
-  form.addEventListener('submit', (e) => {
+  elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = urlInput.value;
+    const url = elements.urlInput.value;
 
     schema.validate(url)
       .then((value) => {
@@ -124,14 +129,14 @@ export default (i18n) => {
       });
   });
 
-  postsContainer.addEventListener('click', (e) => {
+  elements.postsContainer.addEventListener('click', (e) => {
     const { id } = e.target.dataset;
     if (id) {
       state.seenPosts.push(id);
     }
   });
 
-  postModal.addEventListener('show.bs.modal', (e) => {
+  elements.postModal.addEventListener('show.bs.modal', (e) => {
     const button = e.relatedTarget;
 
     const postEl = button.closest('li.list-group-item');
@@ -144,9 +149,9 @@ export default (i18n) => {
     const postDescription = post.description;
     const postLink = post.link;
 
-    const modalTitle = postModal.querySelector('#postModalLabel');
-    const modalDesc = postModal.querySelector('div.modal-body');
-    const modalLink = postModal.querySelector('a.full-article');
+    const modalTitle = elements.postModal.querySelector('#postModalLabel');
+    const modalDesc = elements.postModal.querySelector('div.modal-body');
+    const modalLink = elements.postModal.querySelector('a.full-article');
 
     modalTitle.textContent = postTitle;
     modalDesc.textContent = postDescription;
