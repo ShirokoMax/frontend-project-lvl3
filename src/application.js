@@ -4,16 +4,17 @@ import onChange from 'on-change';
 import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
 
+const elements = {
+  form: document.querySelector('form.rss-form.text-body'),
+  urlInput: document.getElementById('url-input'),
+  formSubmit: document.querySelector('button[aria-label="add"]'),
+  postsContainer: document.querySelector('div.posts'),
+  feedsContainer: document.querySelector('div.feeds'),
+  messageContainer: document.querySelector('p.feedback'),
+  postModal: document.getElementById('postModal'),
+};
+
 export default (i18n) => {
-  const elements = {
-    form: document.querySelector('form.rss-form.text-body'),
-    urlInput: document.getElementById('url-input'),
-    formSubmit: document.querySelector('button[aria-label="add"]'),
-    postsContainer: document.querySelector('div.posts'),
-    feedsContainer: document.querySelector('div.feeds'),
-    messageContainer: document.querySelector('p.feedback'),
-    postModal: document.getElementById('postModal'),
-  };
 
   const state = view({
     form: {
