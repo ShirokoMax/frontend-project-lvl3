@@ -11,7 +11,7 @@ const init = () => {
   yup.setLocale(yupLocales);
 
   const i18n = i18next.createInstance();
-  i18n.init({
+  return i18n.init({
     lng: language,
     debug: false,
     resources: {
@@ -19,7 +19,6 @@ const init = () => {
     },
   })
     .then(() => runApp(i18n))
-    .then(() => Promise.resolve());
 };
 
 export default init;
