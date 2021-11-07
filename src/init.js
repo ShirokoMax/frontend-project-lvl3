@@ -18,7 +18,7 @@ const init = () => {
       ru: resources.ru,
     },
   })
-    .then(() => runApp(i18n))
+    .then(() => runApp(i18n));
 };
 
 export default init;
