@@ -18,9 +18,8 @@ const init = () => {
       ru: resources.ru,
     },
   })
-    .then(() => {
-      runApp(i18n);
-    });
+    .then(() => runApp(i18n))
+    .then(() => Promise.resolve());
 };
 
 export default init;
