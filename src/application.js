@@ -58,9 +58,13 @@ export default (i18n) => {
           const { posts } = xmlDataOfNewPosts;
           state.posts.push(...posts);
         })
-        .catch(() => {
-          const requestError = new Error(i18n.t('errors.requestError'));
-          errorHandler(requestError);
+        .catch((err) => {
+          if (err.message === 'Network Error') {
+            const requestError = new Error(i18n.t('errors.requestError'));
+            errorHandler(requestError);
+            return;
+          }
+          errorHandler(err);
         });
     });
 
@@ -120,6 +124,11 @@ export default (i18n) => {
             }
           })
           .catch((err) => {
+            if (err.message === 'Network Error') {
+              const requestError = new Error(i18n.t('errors.requestError'));
+              errorHandler(requestError);
+              return;
+            }
             errorHandler(err);
           });
       })
