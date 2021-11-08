@@ -5,18 +5,16 @@ import resources from './locales/index.js';
 import runApp from './application.js';
 
 const init = () => {
-  const language = 'ru';
+  const defaultLanguage = 'ru';
 
-  const yupLocales = resources[language].translation.validationErrors;
+  const yupLocales = resources[defaultLanguage].translation.validationErrors;
   yup.setLocale(yupLocales);
 
   const i18n = i18next.createInstance();
   return i18n.init({
-    lng: language,
+    lng: defaultLanguage,
     debug: false,
-    resources: {
-      ru: resources.ru,
-    },
+    resources,
   })
     .then(() => runApp(i18n));
 };
