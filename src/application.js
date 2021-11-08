@@ -119,9 +119,8 @@ export default (i18n) => {
               }, postsUpdateFrequency);
             }
           })
-          .catch(() => {
-            const requestError = new Error(i18n.t('errors.requestError'));
-            errorHandler(requestError);
+          .catch((err) => {
+            errorHandler(err);
           });
       })
       .catch((err) => {
