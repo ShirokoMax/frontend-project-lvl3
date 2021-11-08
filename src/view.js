@@ -76,13 +76,13 @@ export default (state, i18n, elements) => {
 
         case 'pending':
           messageContainer.textContent = '';
-          urlInput.disabled = true;
+          urlInput.readOnly = true;
           formSubmit.disabled = true;
           break;
 
         case 'fulfilled':
           form.reset();
-          urlInput.disabled = false;
+          urlInput.readOnly = false;
           formSubmit.disabled = false;
           urlInput.focus();
           messageContainer.classList.remove('text-danger');
@@ -91,7 +91,7 @@ export default (state, i18n, elements) => {
           break;
 
         case 'error':
-          urlInput.disabled = false;
+          urlInput.readOnly = false;
           formSubmit.disabled = false;
           messageContainer.classList.remove('text-success');
           messageContainer.classList.add('text-danger');
