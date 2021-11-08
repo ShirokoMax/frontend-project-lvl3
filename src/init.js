@@ -10,13 +10,28 @@ const init = () => {
   const yupLocales = resources[defaultLanguage].translation.validationErrors;
   yup.setLocale(yupLocales);
 
+  const initialState = {
+    form: {
+      state: 'initial',
+      valid: true,
+      data: {
+        url: '',
+      },
+      error: '',
+    },
+    refreshing: false,
+    feeds: [],
+    posts: [],
+    seenPosts: [],
+  };
+
   const i18n = i18next.createInstance();
   return i18n.init({
     lng: defaultLanguage,
     debug: false,
     resources,
   })
-    .then(() => runApp(i18n));
+    .then(() => runApp(initialState, i18n));
 };
 
 export default init;

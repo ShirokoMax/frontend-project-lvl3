@@ -4,31 +4,18 @@ import onChange from 'on-change';
 import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
 
-export default (i18n) => {
-  const elements = {
-    form: document.querySelector('form.rss-form.text-body'),
-    urlInput: document.getElementById('url-input'),
-    formSubmit: document.querySelector('button[aria-label="add"]'),
-    postsContainer: document.querySelector('div.posts'),
-    feedsContainer: document.querySelector('div.feeds'),
-    messageContainer: document.querySelector('p.feedback'),
-    postModal: document.getElementById('postModal'),
-  };
+const elements = {
+  form: document.querySelector('form.rss-form.text-body'),
+  urlInput: document.getElementById('url-input'),
+  formSubmit: document.querySelector('button[aria-label="add"]'),
+  postsContainer: document.querySelector('div.posts'),
+  feedsContainer: document.querySelector('div.feeds'),
+  messageContainer: document.querySelector('p.feedback'),
+  postModal: document.getElementById('postModal'),
+};
 
-  const state = view({
-    form: {
-      state: 'initial',
-      valid: true,
-      data: {
-        url: '',
-      },
-      error: '',
-    },
-    refreshing: false,
-    feeds: [],
-    posts: [],
-    seenPosts: [],
-  }, i18n, elements);
+export default (initialState, i18n) => {
+  const state = view(initialState, i18n, elements);
 
   const errorHandler = (err) => {
     state.form.valid = false;
@@ -73,26 +60,20 @@ export default (i18n) => {
     }, postsUpdateFrequency);
   };
 
-  const schema = yup.string().url().required();
-
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const url = elements.urlInput.value;
 
+    const feedsUrls = state.feeds.map((feed) => feed.url);
+    const schema = yup.string().url().required().notOneOf(feedsUrls);
+
     schema.validate(url)
       .then((value) => {
-        if (state.feeds.find((el) => el.url === value) !== undefined) {
-          state.form.valid = false;
-          state.form.error = i18n.t('errors.duplicate');
-          state.form.state = 'error';
-          throw new Error(i18n.t('errors.duplicate'));
-        }
-
         state.form.valid = true;
         state.form.state = 'pending';
         state.form.data = value;
       })
-      .then(() => { // argument = undefined
+      .then(() => {
         axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`)
           .then((resp) => {
             if (resp.status === 200) {

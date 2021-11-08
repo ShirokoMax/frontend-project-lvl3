@@ -11,7 +11,6 @@ export default {
       header: 'Фиды',
     },
     errors: {
-      duplicate: 'RSS уже существует',
       unknownProcess: 'Неизвестное состояние процесса: {{process}}',
       networkError: 'Сетевой ответ был неудовлетворительным. Код статуса: {{code}}',
       requestError: 'Ошибка сети',
@@ -25,6 +24,7 @@ export default {
       },
       mixed: {
         required: 'Это обязательное поле',
+        notOneOf: 'RSS уже существует',
       },
     },
   },
