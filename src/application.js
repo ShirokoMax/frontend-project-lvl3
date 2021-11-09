@@ -36,6 +36,7 @@ export default (initialState, i18n) => {
     existedFeeds.forEach((feed) => {
       const { url } = feed;
       axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
+        .then((resp) => resp.data)
         .then((data) => {
           const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts, i18n);
 
@@ -72,6 +73,7 @@ export default (initialState, i18n) => {
       })
       .then(() => {
         axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
+          .then((resp) => resp.data)
           .then((data) => {
             const xmlData = parse(data.contents, 'xml', i18n);
             const { id, title, description } = xmlData;
