@@ -11,10 +11,9 @@ export default {
       header: 'Фиды',
     },
     errors: {
-      unknownProcess: 'Неизвестное состояние процесса: {{process}}',
-      networkError: 'Сетевой ответ был неудовлетворительным. Код статуса: {{code}}',
-      requestError: 'Ошибка сети',
-      parserTypeError: 'Данный тип данных не поддерживается. Укажите один из следующих типов: {{types}}',
+      unknownProcess: 'Неизвестное состояние процесса',
+      networkError: 'Ошибка сети',
+      parserTypeError: 'Данный тип данных не поддерживается',
       rssError: 'Ресурс не содержит валидный RSS',
     },
     validationErrors: {

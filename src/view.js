@@ -95,7 +95,7 @@ export default (state, i18n, elements) => {
           formSubmit.disabled = false;
           messageContainer.classList.remove('text-success');
           messageContainer.classList.add('text-danger');
-          messageContainer.textContent = state.form.error;
+          messageContainer.textContent = i18n.t(state.form.error);
           break;
 
         default:

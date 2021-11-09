@@ -1,4 +1,3 @@
-// import i18n from 'i18next';
 import uniqueId from 'lodash/uniqueId.js';
 
 const mapping = {
@@ -8,20 +7,22 @@ const mapping = {
   },
 };
 
-const parse = (data, type, i18n) => {
+const getValidatedData = (data, type) => {
   const fn = mapping[type];
   if (typeof fn !== 'function') {
-    throw new Error(
-      `${i18n.t('errors.parserTypeError',
-        { types: Object.keys(mapping).join(', ') })}`,
-    );
+    throw new Error('errors.parserTypeError');
   }
 
   const doc = fn(data);
   const errorNode = doc.querySelector('parsererror');
   if (errorNode) {
-    throw new Error(i18n.t('errors.rssError'));
+    throw new Error('errors.rssError');
   }
+  return doc;
+};
+
+const parse = (data, type) => {
+  const doc = getValidatedData(data, type);
 
   const feedTitle = doc.querySelector('channel > title');
   const feedDescription = doc.querySelector('channel > description');
@@ -51,20 +52,8 @@ const parse = (data, type, i18n) => {
   };
 };
 
-const parseNewPosts = (data, type, feedId, posts, i18n) => {
-  const fn = mapping[type];
-  if (typeof fn !== 'function') {
-    throw new Error(
-      `${i18n.t('errors.parserTypeError',
-        { types: Object.keys(mapping).join(', ') })}`,
-    );
-  }
-
-  const doc = fn(data);
-  const errorNode = doc.querySelector('parsererror');
-  if (errorNode) {
-    throw new Error(i18n.t('errors.rssError'));
-  }
+const parseNewPosts = (data, type, feedId, posts) => {
+  const doc = getValidatedData(data, type);
 
   const feedPosts = posts.filter((item) => item.feedId === feedId);
 

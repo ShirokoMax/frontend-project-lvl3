@@ -24,6 +24,9 @@ export default (initialState, i18n) => {
     state.form.state = 'error';
   };
 
+  const corsProxy = 'https://hexlet-allorigins.herokuapp.com';
+  const corsProxyApi = `${corsProxy}/get?disableCache=true&url=`;
+
   const postsUpdateFrequency = 5000;
 
   const getNewPosts = () => {
@@ -32,13 +35,7 @@ export default (initialState, i18n) => {
 
     existedFeeds.forEach((feed) => {
       const { url } = feed;
-      axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`)
-        .then((resp) => {
-          if (resp.status === 200) {
-            return resp.data;
-          }
-          throw new Error(i18n.t('errors.networkError', { code: resp.status }));
-        })
+      axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
         .then((data) => {
           const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts, i18n);
 
@@ -47,8 +44,8 @@ export default (initialState, i18n) => {
         })
         .catch((err) => {
           if (err.message === 'Network Error') {
-            const requestError = new Error(i18n.t('errors.requestError'));
-            errorHandler(requestError);
+            const networkError = new Error('errors.networkError');
+            errorHandler(networkError);
             return;
           }
           errorHandler(err);
@@ -74,13 +71,7 @@ export default (initialState, i18n) => {
         state.form.data = value;
       })
       .then(() => {
-        axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`)
-          .then((resp) => {
-            if (resp.status === 200) {
-              return resp.data;
-            }
-            throw new Error(i18n.t('errors.networkError', { code: resp.status }));
-          })
+        axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
           .then((data) => {
             const xmlData = parse(data.contents, 'xml', i18n);
             const { id, title, description } = xmlData;
@@ -106,8 +97,8 @@ export default (initialState, i18n) => {
           })
           .catch((err) => {
             if (err.message === 'Network Error') {
-              const requestError = new Error(i18n.t('errors.requestError'));
-              errorHandler(requestError);
+              const networkError = new Error('errors.networkError');
+              errorHandler(networkError);
               return;
             }
             errorHandler(err);
