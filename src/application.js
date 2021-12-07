@@ -4,17 +4,7 @@ import onChange from 'on-change';
 import view from './view.js';
 import { parse, parseNewPosts } from './parser.js';
 
-export default (initialState, i18n) => {
-  const elements = {
-    form: document.querySelector('form.rss-form.text-body'),
-    urlInput: document.getElementById('url-input'),
-    formSubmit: document.querySelector('button[aria-label="add"]'),
-    postsContainer: document.querySelector('div.posts'),
-    feedsContainer: document.querySelector('div.feeds'),
-    messageContainer: document.querySelector('p.feedback'),
-    postModal: document.getElementById('postModal'),
-  };
-
+export default (initialState, elements, i18n) => {
   const state = view(initialState, i18n, elements);
 
   const errorHandler = (err) => {
@@ -89,9 +79,9 @@ export default (initialState, i18n) => {
             state.form.state = 'fulfilled';
           })
           .then(() => {
-            const isRefreshing = onChange.target(state).refreshing;
-            if (isRefreshing === false) {
-              state.refreshing = true;
+            const isLoading = onChange.target(state).loading;
+            if (isLoading === false) {
+              state.loading = true;
               setTimeout(() => {
                 getNewPosts();
               }, postsUpdateFrequency);
