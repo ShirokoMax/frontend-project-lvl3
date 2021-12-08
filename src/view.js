@@ -63,8 +63,7 @@ export default (state, i18n, elements) => {
     if (path === 'form.valid') {
       if (value === true) {
         urlInput.classList.remove('is-invalid');
-      }
-      if (value === false) {
+      } else if (value === false) {
         urlInput.classList.add('is-invalid');
       }
     }
@@ -104,7 +103,7 @@ export default (state, i18n, elements) => {
     }
 
     if (path === 'posts') {
-      const { seenPosts } = onChange.target(state);
+      const { seenPosts } = state;
       const postsHtml = generatePostsHtml(value, seenPosts, i18n);
       postsContainer.innerHTML = postsHtml;
     }
@@ -115,7 +114,7 @@ export default (state, i18n, elements) => {
     }
 
     if (path === 'seenPosts') {
-      const { posts } = onChange.target(state);
+      const { posts } = state;
       const postsHtml = generatePostsHtml(posts, value, i18n);
       postsContainer.innerHTML = postsHtml;
     }

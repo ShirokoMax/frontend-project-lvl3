@@ -1,8 +1,76 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import onChange from 'on-change';
+import uniqueId from 'lodash/uniqueId.js';
 import view from './view.js';
-import { parse, parseNewPosts } from './parser.js';
+import { parse } from './parser.js';
+
+const postsUpdateFrequency = 5000;
+
+const getProxiedUrl = (url) => {
+  const corsProxy = 'https://hexlet-allorigins.herokuapp.com';
+  const corsProxyApi = `${corsProxy}/get?disableCache=true&url=`;
+  return new URL(`${corsProxyApi}${url}`);
+};
+
+const getFeedData = (doc) => {
+  const feedTitle = doc.querySelector('channel > title');
+  const feedDescription = doc.querySelector('channel > description');
+  const feedId = uniqueId('feed_');
+  const itemsCollection = doc.querySelectorAll('item');
+  const itemsArray = Array.from(itemsCollection);
+
+  const items = itemsArray.map((item) => {
+    const postTitle = item.querySelector('title');
+    const postDescription = item.querySelector('description');
+    const postLink = item.querySelector('link');
+    const postId = uniqueId('post_');
+    return {
+      id: postId,
+      feedId,
+      title: postTitle.textContent,
+      description: postDescription.textContent,
+      link: postLink.textContent,
+    };
+  });
+
+  return {
+    id: feedId,
+    title: feedTitle.textContent,
+    description: feedDescription.textContent,
+    posts: items,
+  };
+};
+
+const getNewPostsData = (doc, feedId, posts) => {
+  const feedPosts = posts.filter((item) => item.feedId === feedId);
+
+  const itemsCollection = doc.querySelectorAll('item');
+  const itemsArray = Array.from(itemsCollection);
+
+  const newPosts = [];
+
+  itemsArray.forEach((item) => {
+    const postTitle = item.querySelector('title');
+
+    const findedPost = feedPosts.find((feedPost) => feedPost.title === postTitle.textContent);
+    if (findedPost === undefined) {
+      const postDescription = item.querySelector('description');
+      const postLink = item.querySelector('link');
+      const postId = uniqueId('post_');
+      newPosts.push({
+        id: postId,
+        feedId,
+        title: postTitle.textContent,
+        description: postDescription.textContent,
+        link: postLink.textContent,
+      });
+    }
+  });
+
+  return {
+    posts: newPosts,
+  };
+};
 
 export default (initialState, elements, i18n) => {
   const state = view(initialState, i18n, elements);
@@ -14,23 +82,19 @@ export default (initialState, elements, i18n) => {
     state.form.state = 'error';
   };
 
-  const corsProxy = 'https://hexlet-allorigins.herokuapp.com';
-  const corsProxyApi = `${corsProxy}/get?disableCache=true&url=`;
-
-  const postsUpdateFrequency = 5000;
-
   const getNewPosts = () => {
-    const existedFeeds = onChange.target(state).feeds;
-    const existedPosts = onChange.target(state).posts;
+    const existedFeeds = state.feeds;
+    const existedPosts = state.posts;
 
     existedFeeds.forEach((feed) => {
       const { url } = feed;
-      axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
+      axios.get(getProxiedUrl(url))
         .then((resp) => resp.data)
         .then((data) => {
-          const xmlDataOfNewPosts = parseNewPosts(data.contents, 'xml', feed.id, existedPosts, i18n);
+          const xmlData = parse(data.contents, 'xml');
+          const dataOfNewPosts = getNewPostsData(xmlData, feed.id, existedPosts);
 
-          const { posts } = xmlDataOfNewPosts;
+          const { posts } = dataOfNewPosts;
           state.posts.push(...posts);
         })
         .catch((err) => {
@@ -42,11 +106,48 @@ export default (initialState, elements, i18n) => {
           errorHandler(err);
         });
     });
-
-    setTimeout(() => {
-      getNewPosts();
-    }, postsUpdateFrequency);
   };
+
+  const addNewFeed = (url, schema) => schema.validate(url)
+    .then((value) => {
+      state.form.valid = true;
+      state.form.state = 'pending';
+      state.form.data = value;
+      axios.get(getProxiedUrl(url))
+        .then((resp) => resp.data)
+        .then((data) => {
+          const xmlData = parse(data.contents, 'xml');
+          const feedData = getFeedData(xmlData);
+          const { id, title, description } = feedData;
+          state.feeds.push({
+            url,
+            id,
+            title,
+            description,
+          });
+
+          const { posts } = feedData;
+          state.posts.push(...posts);
+          state.form.state = 'fulfilled';
+        })
+        .then(() => {
+          const isLoading = state.loading;
+          if (isLoading === false) {
+            state.loading = true;
+            setInterval(() => {
+              getNewPosts();
+            }, postsUpdateFrequency);
+          }
+        })
+        .catch((err) => {
+          if (err.message === 'Network Error') {
+            const networkError = new Error('errors.networkError');
+            errorHandler(networkError);
+            return;
+          }
+          errorHandler(err);
+        });
+    });
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -55,47 +156,7 @@ export default (initialState, elements, i18n) => {
     const feedsUrls = state.feeds.map((feed) => feed.url);
     const schema = yup.string().url().required().notOneOf(feedsUrls);
 
-    schema.validate(url)
-      .then((value) => {
-        state.form.valid = true;
-        state.form.state = 'pending';
-        state.form.data = value;
-      })
-      .then(() => {
-        axios.get(`${corsProxyApi}${encodeURIComponent(url)}`)
-          .then((resp) => resp.data)
-          .then((data) => {
-            const xmlData = parse(data.contents, 'xml', i18n);
-            const { id, title, description } = xmlData;
-            state.feeds.push({
-              url,
-              id,
-              title,
-              description,
-            });
-
-            const { posts } = xmlData;
-            state.posts.push(...posts);
-            state.form.state = 'fulfilled';
-          })
-          .then(() => {
-            const isLoading = onChange.target(state).loading;
-            if (isLoading === false) {
-              state.loading = true;
-              setTimeout(() => {
-                getNewPosts();
-              }, postsUpdateFrequency);
-            }
-          })
-          .catch((err) => {
-            if (err.message === 'Network Error') {
-              const networkError = new Error('errors.networkError');
-              errorHandler(networkError);
-              return;
-            }
-            errorHandler(err);
-          });
-      })
+    addNewFeed(url, schema)
       .catch((err) => {
         errorHandler(err);
       });
@@ -115,7 +176,7 @@ export default (initialState, elements, i18n) => {
     const anchorEl = postEl.querySelector('a');
     const postId = anchorEl.dataset.id;
 
-    const { posts } = onChange.target(state);
+    const { posts } = state;
     const post = posts.find((item) => item.id === postId);
     const postTitle = post.title;
     const postDescription = post.description;
