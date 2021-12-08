@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import axios from 'axios';
 import uniqueId from 'lodash/uniqueId.js';
 import view from './view.js';
-import { parse } from './parser.js';
+import parse from './parser.js';
 
 const postsUpdateFrequency = 5000;
 

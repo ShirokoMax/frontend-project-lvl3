@@ -19,4 +19,4 @@ const parse = (data, type) => {
   return doc;
 };
 
-export { parse };
+export default parse;
