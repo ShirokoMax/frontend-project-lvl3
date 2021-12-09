@@ -80,7 +80,7 @@ export default (initialState, elements, i18n) => {
     state.form.error = err.errorPath;
     state.form.state = 'initial';
     state.form.state = 'error';
-    throw err;
+    console.error(err);
   };
 
   const getNewPosts = () => {
