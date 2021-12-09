@@ -47,7 +47,7 @@ const generateFeedsHtml = (feeds, i18n) => {
   return feedsWrapper;
 };
 
-export default (state, i18n, elements) => {
+export default (state, elements, i18n) => {
   const {
     form,
     urlInput,
@@ -69,6 +69,8 @@ export default (state, i18n, elements) => {
     }
 
     if (path === 'form.state') {
+      let err;
+
       switch (value) {
         case 'initial':
           break;
@@ -98,7 +100,9 @@ export default (state, i18n, elements) => {
           break;
 
         default:
-          throw new Error(i18n.t('errors.unknownProcess', { process: value }));
+          err = new Error('Unknown process state');
+          err.errorPath = 'errors.unknownProcess';
+          throw err;
       }
     }
 

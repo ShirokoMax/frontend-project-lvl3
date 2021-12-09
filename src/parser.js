@@ -8,13 +8,17 @@ const mapping = {
 const parse = (data, type) => {
   const fn = mapping[type];
   if (typeof fn !== 'function') {
-    throw new Error('errors.parserTypeError');
+    const err = new Error('This data type is not supported');
+    err.errorPath = 'errors.parserTypeError';
+    throw err;
   }
 
   const doc = fn(data);
   const errorNode = doc.querySelector('parsererror');
   if (errorNode) {
-    throw new Error('errors.rssError');
+    const err = new Error('Resource does not contain valid RSS');
+    err.errorPath = 'errors.rssError';
+    throw err;
   }
   return doc;
 };

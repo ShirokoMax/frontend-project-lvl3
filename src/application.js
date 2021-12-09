@@ -73,13 +73,14 @@ const getNewPostsData = (doc, feedId, posts) => {
 };
 
 export default (initialState, elements, i18n) => {
-  const state = view(initialState, i18n, elements);
+  const state = view(initialState, elements, i18n);
 
   const errorHandler = (err) => {
     state.form.valid = false;
-    state.form.error = err.message;
+    state.form.error = err.errorPath;
     state.form.state = 'initial';
     state.form.state = 'error';
+    throw err;
   };
 
   const getNewPosts = () => {
@@ -89,21 +90,12 @@ export default (initialState, elements, i18n) => {
     existedFeeds.forEach((feed) => {
       const { url } = feed;
       axios.get(getProxiedUrl(url))
-        .then((resp) => resp.data)
-        .then((data) => {
+        .then(({ data }) => {
           const xmlData = parse(data.contents, 'xml');
           const dataOfNewPosts = getNewPostsData(xmlData, feed.id, existedPosts);
 
           const { posts } = dataOfNewPosts;
           state.posts.push(...posts);
-        })
-        .catch((err) => {
-          if (err.message === 'Network Error') {
-            const networkError = new Error('errors.networkError');
-            errorHandler(networkError);
-            return;
-          }
-          errorHandler(err);
         });
     });
   };
@@ -114,8 +106,7 @@ export default (initialState, elements, i18n) => {
       state.form.state = 'pending';
       state.form.data = value;
       axios.get(getProxiedUrl(url))
-        .then((resp) => resp.data)
-        .then((data) => {
+        .then(({ data }) => {
           const xmlData = parse(data.contents, 'xml');
           const feedData = getFeedData(xmlData);
           const { id, title, description } = feedData;
@@ -140,12 +131,13 @@ export default (initialState, elements, i18n) => {
           }
         })
         .catch((err) => {
-          if (err.message === 'Network Error') {
-            const networkError = new Error('errors.networkError');
-            errorHandler(networkError);
-            return;
+          if (axios.isAxiosError(err)) {
+            const modifiedErr = err;
+            modifiedErr.errorPath = 'errors.networkError';
+            errorHandler(modifiedErr);
+          } else {
+            errorHandler(err);
           }
-          errorHandler(err);
         });
     });
 
@@ -158,7 +150,13 @@ export default (initialState, elements, i18n) => {
 
     addNewFeed(url, schema)
       .catch((err) => {
-        errorHandler(err);
+        if (err.name === 'ValidationError') {
+          const modifiedErr = err;
+          modifiedErr.errorPath = err.message;
+          errorHandler(err);
+        } else {
+          errorHandler(err);
+        }
       });
   });
 
