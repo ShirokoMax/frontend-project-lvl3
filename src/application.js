@@ -53,7 +53,7 @@ const getNewPostsData = (doc, feedId, posts) => {
     const postTitle = item.querySelector('title');
 
     const findedPost = feedPosts.find((feedPost) => feedPost.title === postTitle.textContent);
-    if (findedPost === undefined) {
+    if (!findedPost) {
       const postDescription = item.querySelector('description');
       const postLink = item.querySelector('link');
       const postId = uniqueId('post_');
@@ -91,7 +91,7 @@ export default (initialState, elements, i18n) => {
       const { url } = feed;
       axios.get(getProxiedUrl(url))
         .then(({ data }) => {
-          const xmlData = parse(data.contents, 'xml');
+          const xmlData = parse(data.contents);
           const dataOfNewPosts = getNewPostsData(xmlData, feed.id, existedPosts);
 
           const { posts } = dataOfNewPosts;
@@ -107,7 +107,7 @@ export default (initialState, elements, i18n) => {
       state.form.data = value;
       axios.get(getProxiedUrl(url))
         .then(({ data }) => {
-          const xmlData = parse(data.contents, 'xml');
+          const xmlData = parse(data.contents);
           const feedData = getFeedData(xmlData);
           const { id, title, description } = feedData;
           state.feeds.push({
@@ -122,9 +122,8 @@ export default (initialState, elements, i18n) => {
           state.form.state = 'fulfilled';
         })
         .then(() => {
-          const isLoading = state.loading;
-          if (isLoading === false) {
-            state.loading = true;
+          if (!state.isFeedsLoading) {
+            state.isFeedsLoading = true;
             setInterval(() => {
               getNewPosts();
             }, postsUpdateFrequency);
@@ -174,18 +173,6 @@ export default (initialState, elements, i18n) => {
     const anchorEl = postEl.querySelector('a');
     const postId = anchorEl.dataset.id;
 
-    const { posts } = state;
-    const post = posts.find((item) => item.id === postId);
-    const postTitle = post.title;
-    const postDescription = post.description;
-    const postLink = post.link;
-
-    const modalTitle = elements.postModal.querySelector('#postModalLabel');
-    const modalDesc = elements.postModal.querySelector('div.modal-body');
-    const modalLink = elements.postModal.querySelector('a.full-article');
-
-    modalTitle.textContent = postTitle;
-    modalDesc.textContent = postDescription;
-    modalLink.href = postLink;
+    state.openedPostId = postId;
   });
 };

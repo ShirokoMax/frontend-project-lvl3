@@ -19,10 +19,11 @@ const init = () => {
       },
       error: '',
     },
-    loading: false,
+    isFeedsLoading: false,
     feeds: [],
     posts: [],
     seenPosts: [],
+    openedPostId: null,
   };
 
   const elements = {
@@ -33,6 +34,9 @@ const init = () => {
     feedsContainer: document.querySelector('div.feeds'),
     messageContainer: document.querySelector('p.feedback'),
     postModal: document.getElementById('postModal'),
+    modalTitle: document.getElementById('postModalLabel'),
+    modalDesc: document.querySelector('div.modal-body'),
+    modalLink: document.querySelector('a.full-article'),
   };
 
   const i18n = i18next.createInstance();

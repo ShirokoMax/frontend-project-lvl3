@@ -6,7 +6,7 @@ const generatePostsHtml = (posts, seenPosts, i18n) => {
 
     return `
     <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
-      <a class="${isSeen === true ? 'fw-normal' : 'fw-bold'}" href="${post.link}"
+      <a class="${isSeen ? 'fw-normal' : 'fw-bold'}" href="${post.link}"
       data-id="${post.id}" target="_blank" rel="noopener noreferrer">
         ${post.title}
       </a>
@@ -55,15 +55,18 @@ export default (state, elements, i18n) => {
     postsContainer,
     feedsContainer,
     messageContainer,
+    modalTitle,
+    modalDesc,
+    modalLink,
   } = elements;
 
   urlInput.focus();
 
   return onChange(state, (path, value) => {
     if (path === 'form.valid') {
-      if (value === true) {
+      if (value) {
         urlInput.classList.remove('is-invalid');
-      } else if (value === false) {
+      } else {
         urlInput.classList.add('is-invalid');
       }
     }
@@ -121,6 +124,18 @@ export default (state, elements, i18n) => {
       const { posts } = state;
       const postsHtml = generatePostsHtml(posts, value, i18n);
       postsContainer.innerHTML = postsHtml;
+    }
+
+    if (path === 'openedPostId') {
+      const { posts } = state;
+      const post = posts.find((item) => item.id === value);
+      const postTitle = post.title;
+      const postDescription = post.description;
+      const postLink = post.link;
+
+      modalTitle.textContent = postTitle;
+      modalDesc.textContent = postDescription;
+      modalLink.href = postLink;
     }
   });
 };

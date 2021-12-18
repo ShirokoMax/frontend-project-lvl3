@@ -13,7 +13,6 @@ export default {
     errors: {
       unknownProcess: 'Неизвестное состояние процесса',
       networkError: 'Ошибка сети',
-      parserTypeError: 'Данный тип данных не поддерживается',
       rssError: 'Ресурс не содержит валидный RSS',
     },
     validationErrors: {
