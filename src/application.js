@@ -77,7 +77,7 @@ export default (initialState, elements, i18n) => {
 
   const errorHandler = (err) => {
     state.form.valid = false;
-    state.form.error = err.errorPath;
+    state.form.error = err;
     state.form.state = 'initial';
     state.form.state = 'error';
     console.error(err);
@@ -132,7 +132,7 @@ export default (initialState, elements, i18n) => {
         .catch((err) => {
           if (axios.isAxiosError(err)) {
             const modifiedErr = err;
-            modifiedErr.errorPath = 'errors.networkError';
+            modifiedErr.errorType = 'Network Error';
             errorHandler(modifiedErr);
           } else {
             errorHandler(err);
@@ -151,7 +151,7 @@ export default (initialState, elements, i18n) => {
       .catch((err) => {
         if (err.name === 'ValidationError') {
           const modifiedErr = err;
-          modifiedErr.errorPath = err.message;
+          modifiedErr.errorType = 'Validation Error';
           errorHandler(err);
         } else {
           errorHandler(err);

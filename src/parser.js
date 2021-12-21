@@ -4,7 +4,7 @@ const parse = (data) => {
   const errorNode = doc.querySelector('parsererror');
   if (errorNode) {
     const err = new Error('Resource does not contain valid RSS');
-    err.errorPath = 'errors.rssError';
+    err.errorType = 'RSS Error';
     throw err;
   }
   return doc;

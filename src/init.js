@@ -17,7 +17,7 @@ const init = () => {
       data: {
         url: '',
       },
-      error: '',
+      error: null,
     },
     isFeedsLoading: false,
     feeds: [],

@@ -94,17 +94,34 @@ export default (state, elements, i18n) => {
           messageContainer.textContent = i18n.t('notifications.successful');
           break;
 
-        case 'error':
+        case 'error': {
           urlInput.readOnly = false;
           formSubmit.disabled = false;
           messageContainer.classList.remove('text-success');
           messageContainer.classList.add('text-danger');
-          messageContainer.textContent = i18n.t(state.form.error);
+
+          const { error } = state.form;
+          let errorPath;
+          switch (error.errorType) {
+            case 'Network Error':
+              errorPath = 'errors.networkError';
+              break;
+            case 'Validation Error':
+              errorPath = error.message;
+              break;
+            case 'RSS Error':
+              errorPath = 'errors.rssError';
+              break;
+            default:
+              errorPath = 'errors.unknownError';
+          }
+          messageContainer.textContent = i18n.t(errorPath);
           break;
+        }
 
         default:
           err = new Error('Unknown process state');
-          err.errorPath = 'errors.unknownProcess';
+          err.errorType = 'Unknown Process Error';
           throw err;
       }
     }

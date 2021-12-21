@@ -11,6 +11,7 @@ export default {
       header: 'Фиды',
     },
     errors: {
+      unknownError: 'Неизвестная ошибка',
       unknownProcess: 'Неизвестное состояние процесса',
       networkError: 'Ошибка сети',
       rssError: 'Ресурс не содержит валидный RSS',
